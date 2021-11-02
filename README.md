@@ -1,6 +1,6 @@
 # Spellchecker Story
 
-[![Main](https://github.com/SpirinEgor/spellchecker_story/actions/workflows/main.yaml/badge.svg)](https://github.com/SpirinEgor/spellchecker_story/actions/workflows/main.yaml)
+[![Main](https://github.com/SpirinEgor/spellchecker_story/actions/workflows/main.yaml/badge.svg?branch=master)](https://github.com/SpirinEgor/spellchecker_story/actions/workflows/main.yaml)
 
 Homework assignment for the lecture about Grazie in HSE.
 The task is to create simple GEC system with porting it to JS or JVM.
