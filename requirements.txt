@@ -1,0 +1,7 @@
+tqdm~=4.62.3
+onnxruntime~=1.9.0
+textdistance~=4.2.2
+hunspell~=0.5.5
+numpy~=1.21.3
+skl2onnx~=1.10.0
+scikit-learn~=1.0.1
