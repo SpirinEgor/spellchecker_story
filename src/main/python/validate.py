@@ -9,11 +9,7 @@ from src.main.python.spell_checker import SpellChecker
 
 
 def validate(spellchecker: Callable, test_data_path: str) -> Tuple[float, float]:
-    total, acc_1, acc_5, = (
-        0,
-        0,
-        0,
-    )
+    (total, acc_1, acc_5) = (0, 0, 0)
     with open(test_data_path) as test_data:
         for line in tqdm(test_data, "Validate"):
             incorrect, correct = line.strip().split("\t")
@@ -29,14 +25,13 @@ def validate(spellchecker: Callable, test_data_path: str) -> Tuple[float, float]
 
 def main(onnx_model_path: str, test_data_path: str):
     config = Config.default_config()
-    spellchecker = SpellChecker(config.dic_path, config.aff_path, config.seed)
+    spellchecker = SpellChecker(config.dic_path, config.aff_path, config.classifier, config.seed)
 
     session = InferenceSession(onnx_model_path)
 
     def candidates_retrieve(word: str) -> List[Candidate]:
         return spellchecker.onnx_run(session, word)
 
-    # Accuracy@1: 43.51, accuracy@5: 74.22
     acc_1, acc_5 = validate(candidates_retrieve, test_data_path)
 
     print(f"Accuracy@1: {round(acc_1 * 100, 2)}, accuracy@5: {round(acc_5 * 100, 2)}")

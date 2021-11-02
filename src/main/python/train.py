@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 from os import makedirs
-from os.path import join
 from typing import Optional
 
 from tqdm.auto import tqdm
@@ -16,7 +15,7 @@ def is_only_letters(word: str) -> bool:
 
 def main(train_data_path: str, checkpoint_path: str, test_data_path: Optional[str] = None):
     config = Config.default_config()
-    spellchecker = SpellChecker(config.dic_path, config.aff_path, config.seed)
+    spellchecker = SpellChecker(config.dic_path, config.aff_path, config.classifier, config.seed)
 
     incorrect_words, correct_words = [], []
     with open(train_data_path) as train_data:
@@ -34,12 +33,11 @@ def main(train_data_path: str, checkpoint_path: str, test_data_path: Optional[st
     spellchecker.fit(incorrect_words, correct_words)
 
     if test_data_path is not None:
-        # Accuracy@1: 43.51, accuracy@5: 74.22
         acc_1, acc_5 = validate(spellchecker, test_data_path)
         print(f"Accuracy@1: {round(acc_1 * 100, 2)}, accuracy@5: {round(acc_5 * 100, 2)}")
 
     makedirs(checkpoint_path, exist_ok=True)
-    spellchecker.to_onnx(join(checkpoint_path, "log_reg.onnx"))
+    spellchecker.to_onnx(checkpoint_path)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ To prepare candidates, the following approach is used:
    1. Normalized Damerau-Levenshtein distance.
    2. Normalized Jaro-Winkler distance.
    3. Normalized length of the longest common subsequences.
-3. Logistic regression predicts the probability of correct fix by these features.
+3. Train classifier to predict the probability of correct fix by these features.
 
 ### Normalized distance
 
@@ -23,12 +23,15 @@ then normalized distance is `(1 - l) / max(|s1|, |s2|)`.
 
 For LCS, normalized distance is `LCS / max(|s1|, |s2|)`.
 
-### Training logistic regression
+### Training classifier
 
 Dataset for training model is taken from [norvig](https://www.norvig.com/ngrams/spell-errors.txt).
 For each correct spell:
 - positive example retrieved from dataset
 - negative example retrieved from hunspell's suggestion
+
+Currently, two models are supported: Logistic Regression and Random Forest Classifier.
+To choose model use special [config class](src/main/python/models.py).
 
 ## Validation
 
@@ -70,20 +73,40 @@ PYTHONPATH="." python src/main/python/validate.py \
   --test $PATH_TO_TEST_DATA
 ```
 
-Current [`log_reg.onnx`](checkpoints/log_reg.onnx) model achieves:
-```
-Accuracy@1: 49.18, accuracy@5: 73.49
+|                          | Accuracy@1 | Accuracy@5 |
+|--------------------------|------------|------------|
+| Logistic Regression      | 49.18      | 73.49      |
+| Random Forest Classifier | 48.99      | 73.49      |
+
+[`Checkpoints`](checkpoints) folder contains weights for these model.
+
+### Inference on JVM
+
+[`SpellCheckerKt`](src/main/kotlin/spellchecker/SpellChecker.kt) contains GEC transfer from Python to Kotlin.
+It contains only functionality for inference, and therefore, model should be trained before using it.
+
+[`AppKt`](src/main/kotlin/spellchecker/App.kt) shows an example of usage this system.
+As python validation, it is used to check model accuracy on a test data.
+
+To run example use Gradle:
+```shell
+gradle run --args="$PATH_TO_TEST_DATA $PATH_TO_ONNX_MODEL"
 ```
 
-### Inference in JVM or JS
+|                          | Accuracy@1 | Accuracy@5 |
+|--------------------------|------------|------------|
+| Logistic Regression      | 48.99      | 73.67      |
+| Random Forest Classifier | 46.62      | 73.86      |
 
-TODO
+There is a little bit differents from Python validation.
+Perhaps, it is due to small difference in floating-point arithmetic
+(both kotlin and python use native C hunspell implementation and distance algorithms are deterministic).
 
 ## Thoughts
 
 1. Basically, spellchecker depends only on dictionaries for HunSpell and train dataset.
 There are already a [bunch](https://github.com/wooorm/dictionaries) of such dictionaries for many languages.
-Therefore, adding new language requires only collecting data with known misspells.
-2. Converting logistic regression to ONNX format doesn't have much meaning.
-But the suggested solution may be extended with other models from sklearn.
-And since all models have the same interface, it should be easy.
+Therefore, adding new language requires only collecting data with known misspells for this language.
+2. Current solution belong to Mixed class of GEC systems.
+Therefore, future work may include adding new features, based on rules or existing text algorithms,
+along with ranking model improvements.

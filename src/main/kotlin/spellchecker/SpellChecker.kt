@@ -10,11 +10,11 @@ import info.debatty.java.stringsimilarity.LongestCommonSubsequence
 import java.nio.file.Path
 import kotlin.math.max
 
-class SpellChecker(dictionaryPath: Path, affixPath: Path, onnxModelPath: Path) {
+class SpellChecker(dictionaryPath: Path, affixPath: Path, onnxModelPath: String) {
 
     private val hunspell = Hunspell(dictionaryPath, affixPath)
     private val onnxEnvironment = OrtEnvironment.getEnvironment()
-    private val onnxSession = onnxEnvironment.createSession(onnxModelPath.toString(), OrtSession.SessionOptions())
+    private val onnxSession = onnxEnvironment.createSession(onnxModelPath, OrtSession.SessionOptions())
     private val damerauLevenshtein = Damerau()
     private val jaroWinkler = JaroWinkler()
     private val longestCommonSubsequence = LongestCommonSubsequence()

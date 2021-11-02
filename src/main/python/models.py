@@ -12,6 +12,7 @@ class Candidate:
 class Config:
     dic_path: str
     aff_path: str
+    classifier: str
     seed: int
 
     @staticmethod
@@ -19,4 +20,4 @@ class Config:
         data_folder = "data"
         dic_path = join(data_folder, "index.dic")
         aff_path = join(data_folder, "index.aff")
-        return Config(dic_path, aff_path, 7)
+        return Config(dic_path, aff_path, "random_forest", 7)

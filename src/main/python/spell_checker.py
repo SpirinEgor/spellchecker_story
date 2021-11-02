@@ -1,4 +1,5 @@
 from collections import Counter
+from os.path import join
 from typing import List, Tuple, Counter as TCounter, Optional
 
 import textdistance
@@ -8,6 +9,7 @@ from onnxconverter_common import FloatTensorType
 from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from tqdm.auto import tqdm
 
 from src.main.python.models import Candidate
@@ -15,11 +17,15 @@ from src.main.python.models import Candidate
 
 class SpellChecker:
     _onnx_initial_state = "input"
+    _valid_classifiers = {"log_reg": LogisticRegression, "random_forest": RandomForestClassifier}
 
-    def __init__(self, dic_path: str, aff_path: str, seed: Optional[int] = None):
+    def __init__(self, dic_path: str, aff_path: str, classifier: str, seed: Optional[int] = None):
         self.__hunspell = HunSpell(dic_path, aff_path)
         self.__seed = seed
 
+        if classifier not in self._valid_classifiers:
+            raise ValueError(f"Unknown classifier name: {classifier}")
+        self.__classifier_name = classifier
         self._clr: Optional[LogisticRegression] = None
 
     @staticmethod
@@ -48,7 +54,7 @@ class SpellChecker:
         X_train = array(X_train_list)
         y_train = array(y_train_list)
         print(f"Total shape of train data: {X_train.shape}")
-        self._clr = LogisticRegression(n_jobs=-1, random_state=self.__seed)
+        self._clr = self._valid_classifiers[self.__classifier_name](n_jobs=-1, random_state=self.__seed)
         self._clr.fit(X_train, y_train)
 
     def _prepare_candidates(self, word: str) -> Tuple[List[str], ndarray]:
@@ -75,7 +81,7 @@ class SpellChecker:
             raise RuntimeError(f"Fit spellchecker before dumping to onnx it")
         initial_type = [(self._onnx_initial_state, FloatTensorType([None, 3]))]
         onnx = convert_sklearn(self._clr, initial_types=initial_type)
-        with open(output_path, "wb") as f:
+        with open(join(output_path, f"{self.__classifier_name}.onnx"), "wb") as f:
             f.write(onnx.SerializeToString())
 
     def onnx_run(self, sess: InferenceSession, word: str) -> List[Candidate]:
