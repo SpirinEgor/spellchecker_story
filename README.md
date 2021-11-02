@@ -66,13 +66,13 @@ test it on test data, and save logistic regression in onnx format.
 To validate GEC, use [`validate`](src/main/python/validate.py) script:
 ```shell
 PYTHONPATH="." python src/main/python/validate.py \
-  --model $PATH_TO_ONNX_MODEL
+  --model $PATH_TO_ONNX_MODEL \
   --test $PATH_TO_TEST_DATA
 ```
 
 Current [`log_reg.onnx`](checkpoints/log_reg.onnx) model achieves:
 ```
-Accuracy@1: 43.51, accuracy@5: 74.22
+Accuracy@1: 49.18, accuracy@5: 73.49
 ```
 
 ### Inference in JVM or JS

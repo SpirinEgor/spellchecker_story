@@ -27,7 +27,7 @@ class SpellChecker:
         max_len = max(len(word), len(candidate))
         levenshtein = (1 - textdistance.damerau_levenshtein(word, candidate)) / max_len
         jaro_winkler = (1 - textdistance.jaro_winkler(word, candidate)) / max_len
-        lcs = len(textdistance.lcsstr(word, candidate)) / max_len
+        lcs = len(textdistance.lcsseq(word, candidate)) / max_len
         return array([levenshtein, jaro_winkler, lcs])
 
     def fit(self, incorrect_words: List[str], correct_words: List[str]):
